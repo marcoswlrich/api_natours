@@ -1,10 +1,10 @@
-import fs from 'fs';
+import * as fs from 'fs';
 
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8'),
 );
 
-exports.checkID = (req, res, next, val) => {
+const checkID = (req, res, next, val) => {
   console.log(`Tour id is: ${val}`);
   const { id } = req.params;
 
@@ -17,7 +17,7 @@ exports.checkID = (req, res, next, val) => {
   return next();
 };
 
-exports.checkBody = (req, res, next) => {
+const checkBody = (req, res, next) => {
   if (!req.body.name || !req.body.price) {
     return res.status(400).json({
       status: 'fail',
@@ -27,7 +27,7 @@ exports.checkBody = (req, res, next) => {
   return next();
 };
 
-exports.getAllTours = (req, res) => {
+const getAllTours = (req, res) => {
   console.log(req.requestTime);
 
   res.status(200).json({
@@ -40,7 +40,7 @@ exports.getAllTours = (req, res) => {
   });
 };
 
-exports.getTour = (req, res) => {
+const getTour = (req, res) => {
   console.log(req.params);
   const id = req.params.id * 1;
 
@@ -54,7 +54,7 @@ exports.getTour = (req, res) => {
   });
 };
 
-exports.createTour = (req, res) => {
+const createTour = (req, res) => {
   // console.log(req.body);
 
   const newId = tours[tours.length - 1].id + 1;
@@ -76,7 +76,7 @@ exports.createTour = (req, res) => {
   );
 };
 
-exports.updateTour = (req, res) => {
+const updateTour = (req, res) => {
   res.status(200).json({
     status: 'success',
     data: {
@@ -85,9 +85,19 @@ exports.updateTour = (req, res) => {
   });
 };
 
-exports.deleteTour = (req, res) => {
+const deleteTour = (req, res) => {
   res.status(204).json({
     status: 'success',
     data: null,
   });
+};
+
+export {
+  checkID,
+  checkBody,
+  getAllTours,
+  getTour,
+  createTour,
+  updateTour,
+  deleteTour,
 };
