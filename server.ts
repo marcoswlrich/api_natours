@@ -1,5 +1,7 @@
-import express from 'express';
+import dotenv from 'dotenv';
 import * as fs from 'fs';
+
+import app from './app';
 
 const app = express();
 
@@ -78,5 +80,6 @@ app.patch('/api/v1/tours/:id', (req, res) => {
   return res.status(201);
 });
 
-const port = 4007;
+dotenv.config({ path: '.config.env' });
+const port = process.env.PORT || 4007;
 app.listen(port, () => console.log(`App running on port ${port}...`));
