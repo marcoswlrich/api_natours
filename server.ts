@@ -38,7 +38,7 @@ app.get('/api/v1/tours/:id', (req, res) => {
       tours,
     },
   });
-  return res.status(201).json(tour);
+  return res.status(201);
 });
 
 app.post('/api/v1/tours', (req, res) => {
@@ -58,6 +58,24 @@ app.post('/api/v1/tours', (req, res) => {
       });
     },
   );
+});
+
+app.patch('/api/v1/tours/:id', (req, res) => {
+  const { id } = req.params;
+
+  if (id > tours.length) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Invalid ID',
+    });
+  }
+  res.status(200).json({
+    status: 'sucess',
+    data: {
+      tour: '<Updated tour here...>',
+    },
+  });
+  return res.status(201);
 });
 
 const port = 4007;
