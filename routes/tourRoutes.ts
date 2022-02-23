@@ -10,12 +10,12 @@ import {
   updateTour,
 } from '../controllers/tourController';
 
-const router = express.Router();
+const tourRouter = express.Router();
 
-router.param('id', checkID);
+tourRouter.param('id', checkID);
 
-router.route('/').get(getAllTours).post(checkBody, createTour);
+tourRouter.route('/').get(getAllTours).post(checkBody, createTour);
 
-router.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
+tourRouter.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
-export { router };
+export { tourRouter };
