@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
-import express from 'express';
 
-const app = express();
+import app from './app';
 
 dotenv.config({ path: '.config.env' });
 const port = 4007;

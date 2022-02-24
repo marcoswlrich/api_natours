@@ -1,10 +1,16 @@
+import { Request, Response, NextFunction } from 'express';
 import * as fs from 'fs';
 
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8'),
 );
 
-const checkID = (req, res, next, val) => {
+const checkID = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+  val: number,
+) => {
   console.log(`Tour id is: ${val}`);
   const { id } = req.params;
 
@@ -17,7 +23,7 @@ const checkID = (req, res, next, val) => {
   return next();
 };
 
-const checkBody = (req, res, next) => {
+const checkBody = (req: Request, res: Response, next: NextFunction) => {
   if (!req.body.name || !req.body.price) {
     return res.status(400).json({
       status: 'fail',
@@ -27,7 +33,7 @@ const checkBody = (req, res, next) => {
   return next();
 };
 
-const getAllTours = (req, res) => {
+const getAllTours = (req: Request, res: Response) => {
   console.log(req.requestTime);
 
   res.status(200).json({
@@ -40,7 +46,7 @@ const getAllTours = (req, res) => {
   });
 };
 
-const getTour = (req, res) => {
+const getTour = (req: Request, res: Response) => {
   console.log(req.params);
   const id = req.params.id * 1;
 
@@ -54,7 +60,7 @@ const getTour = (req, res) => {
   });
 };
 
-const createTour = (req, res) => {
+const createTour = (req: Request, res: Response) => {
   // console.log(req.body);
 
   const newId = tours[tours.length - 1].id + 1;
@@ -65,7 +71,7 @@ const createTour = (req, res) => {
   fs.writeFile(
     `${__dirname}/dev-data/data/tours-simple.json`,
     JSON.stringify(tours),
-    err => {
+    status => {
       res.status(201).json({
         status: 'success',
         data: {
@@ -76,7 +82,7 @@ const createTour = (req, res) => {
   );
 };
 
-const updateTour = (req, res) => {
+const updateTour = (req: Request, res: Response) => {
   res.status(200).json({
     status: 'success',
     data: {
@@ -85,14 +91,14 @@ const updateTour = (req, res) => {
   });
 };
 
-const deleteTour = (req, res) => {
+const deleteTour = (req: Request, res: Response) => {
   res.status(204).json({
     status: 'success',
     data: null,
   });
 };
 
-export {
+export default {
   checkID,
   checkBody,
   getAllTours,
