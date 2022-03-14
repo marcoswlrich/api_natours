@@ -47,8 +47,8 @@ const getAllTours = (req: Request, res: Response) => {
 };
 
 const getTour = (req: Request, res: Response) => {
-  console.log(req.params);
-  const id = req.params.id * 1;
+  // console.log(req.params);
+  const { id } = req.params;
 
   const tour = tours.find(el => el.id === id);
 
