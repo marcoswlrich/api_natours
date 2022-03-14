@@ -24,6 +24,7 @@
     "prettier/prettier": "error",
     "import/no-import-module-exports": "off",
     "camelcase": "off",
+    "func-names":"off",
     "import/no-unresolved": "error",
     "@typescript-eslint/naming-convention": [
       "error",
