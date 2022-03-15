@@ -94,7 +94,6 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
-// Virtual populate
 tourSchema.virtual('reviews', {
   ref: 'Review',
   foreignField: 'tour',
