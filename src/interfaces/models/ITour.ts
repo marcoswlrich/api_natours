@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose';
+import { Schema, Document } from 'mongoose';
 
 type Location = {
   type: string;
@@ -15,9 +15,11 @@ type LocationAndDay = {
   day: number;
 };
 
-interface ITour {
+interface ITour extends Document {
+  id: number;
   name: string;
   duration: number;
+  slug: string;
   maxGroupSize: number;
   difficulty: string;
   ratingsAverage?: number;

@@ -1,6 +1,8 @@
+// Erros de coordenadas
+
 import { IBaseError } from './IBaseError';
 
-class INoCoordsError extends Error implements IBaseError {
+class CoordsError extends Error implements IBaseError {
   public statusCode: number;
   public name: string;
 
@@ -8,8 +10,8 @@ class INoCoordsError extends Error implements IBaseError {
     super('Não são fornecidas coordenadas de latitude e longitude');
 
     this.statusCode = 400;
-    this.name = 'Sem Coordenadas';
+    this.name = 'NoCoords';
   }
 }
 
-export { INoCoordsError };
+export { CoordsError };

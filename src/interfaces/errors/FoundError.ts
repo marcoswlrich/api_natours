@@ -1,5 +1,6 @@
 import { IBaseError } from './IBaseError';
 
+// Erro encontrado
 class IFoundError extends Error implements IBaseError {
   public statusCode: number;
   public name: string;

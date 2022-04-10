@@ -1,10 +1,12 @@
-import { Schema } from 'mongoose';
+import { Schema, Document } from 'mongoose';
 
 import { Location, LocationAndDay } from '../models/ITour';
 
-interface ITourDto {
+interface ITourDto extends Document {
+  id: number;
   name: string;
   duration: number;
+  slug: string;
   maxGroupSize: number;
   difficulty: string;
   ratingsAverage?: number;
@@ -20,7 +22,7 @@ interface ITourDto {
   secretTour?: boolean;
   startLocation: Location;
   locations: LocationAndDay[];
-  guides: Array<Schema.Types.ObjectId>;
+  guides: Array<Schema.Types.ObjectId> | null;
 }
 
 interface IPartialTourDto {
