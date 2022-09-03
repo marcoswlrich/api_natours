@@ -24,6 +24,7 @@
     "prettier/prettier": "error",
     "import/no-import-module-exports": "off",
     "no-return-assign":"off",
+    "no-return-await": "off",
     "camelcase": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "func-names":"off",

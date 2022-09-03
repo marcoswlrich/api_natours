@@ -22,7 +22,7 @@ interface ITourDto extends Document {
   secretTour?: boolean;
   startLocation: Location;
   locations: LocationAndDay[];
-  guides: Array<Schema.Types.ObjectId> | null;
+  guides: Array<Schema.Types.ObjectId>;
 }
 
 interface IPartialTourDto {

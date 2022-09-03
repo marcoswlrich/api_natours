@@ -1,7 +1,4 @@
-import { KeyObject } from 'crypto';
-import { ObjectTyped } from 'object-typed';
-import { isKeyObject } from 'util/types';
-
+import { AppError } from '../errors/AppError';
 import { ITourDto, IPartialTourDto } from '../interfaces/dtos/ITourDto';
 import { ITour } from '../interfaces/models/ITour';
 import { ITourService } from '../interfaces/services/ITourService';
@@ -50,21 +47,30 @@ class TourService implements ITourService {
     return tour;
   }
 
-  public async create(dto: ITourDto): Promise<ITour> {
-    return await TourModel.create(dto);
+  async create(dto: ITourDto): Promise<ITour> {
+    const document = await TourModel.create(dto);
+
+    return document;
   }
 
-  public async update(id: string, partial: IPartialTourDto): Promise<ITour> {
-    const tour = await TourModel.findByIdAndUpdate(id, partial);
+  public async update(id: string, partial: IPartialTourDto): Promise<any> {
+    const tour = await TourModel.findByIdAndUpdate(id, partial, {
+      new: true,
+      runValidators: true,
+    });
 
-    ObjectTyped.keys(partial).forEach(key => (tour. = partial[key]));
+    if (!tour) throw new AppError(`ID (${id}) not found!`, 404);
 
-    return tour;
+    const modelName = TourModel.collection.collectionName;
+    const data = { [`${modelName}`]: tour };
+
+    return data;
   }
 
-  public async delete(id: string): Promise<ITour> {
-    return await TourModel.findByIdAndRemove(id);
+  public async delete(id: string): Promise<any> {
+    const document = await TourModel.findByIdAndRemove(id);
+
+    return document;
   }
 }
-
 export { TourService };

@@ -92,8 +92,8 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
     ],
     guides: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        type: Schema.Types.ObjectId,
+        ref: 'userModel',
       },
     ],
   },
@@ -107,7 +107,7 @@ tourSchema.index({ ratingsAverage: -1, price: 1 });
 tourSchema.index({ slug: 1 });
 tourSchema.index({ startLocation: '2dsphere' });
 
-tourSchema.virtual('durationWeeks').get(function (this: ITour) {
+tourSchema.virtual('durationWeeks').get(function(this: ITour) {
   return this.duration / 7;
 });
 
@@ -119,26 +119,26 @@ tourSchema.virtual('reviews', {
 });
 
 // document Middeware
-tourSchema.pre('save', function (next) {
+tourSchema.pre('save', function(next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
 
-tourSchema.pre(/^find/, function (this: any, next) {
+tourSchema.pre(/^find/, function(this: any, next) {
   this.find({ secretTour: { $ne: true } });
   next();
 });
 
-tourSchema.pre(/^find/, function (this: any, next) {
+tourSchema.pre(/^find/, function(this: any, next) {
   this.populate({
     path: 'guides',
-    select: '-passwordChangedAt -__v',
+    select: '-passwordChangedAt',
   });
 
   next();
 });
 
-tourSchema.post('find', function (this: any, docs, next) {
+tourSchema.post('find', function(this: any, docs, next) {
   console.log(`Query took ${Date.now() - this.start} milliseconds!`);
   next();
 });
