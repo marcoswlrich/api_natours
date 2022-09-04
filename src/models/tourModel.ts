@@ -1,11 +1,15 @@
-import { Schema } from 'mongoose';
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import slugify from 'slugify';
 
-import { ITour } from '../interfaces/models/ITour';
+import { ITour, ITourDoc } from '../interfaces/models/ITour';
 // import { UserModel } from './UserModel';
+interface ITourModel extends mongoose.Model<ITourDoc> {
+  build(attrs: ITour): ITourDoc;
+}
 
-const tourSchema: Schema<ITour> = new mongoose.Schema(
+const { Schema } = mongoose;
+
+const tourSchema = new Schema(
   {
     id: Number,
     name: {
@@ -92,7 +96,7 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
     ],
     guides: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'userModel',
       },
     ],
@@ -107,7 +111,7 @@ tourSchema.index({ ratingsAverage: -1, price: 1 });
 tourSchema.index({ slug: 1 });
 tourSchema.index({ startLocation: '2dsphere' });
 
-tourSchema.virtual('durationWeeks').get(function(this: ITour) {
+tourSchema.virtual('durationWeeks').get(function (this: ITour) {
   return this.duration / 7;
 });
 
@@ -119,17 +123,17 @@ tourSchema.virtual('reviews', {
 });
 
 // document Middeware
-tourSchema.pre('save', function(next) {
+tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
 
-tourSchema.pre(/^find/, function(this: any, next) {
+tourSchema.pre(/^find/, function (this: any, next) {
   this.find({ secretTour: { $ne: true } });
   next();
 });
 
-tourSchema.pre(/^find/, function(this: any, next) {
+tourSchema.pre(/^find/, function (this: any, next) {
   this.populate({
     path: 'guides',
     select: '-passwordChangedAt',
@@ -138,11 +142,11 @@ tourSchema.pre(/^find/, function(this: any, next) {
   next();
 });
 
-tourSchema.post('find', function(this: any, docs, next) {
+tourSchema.post('find', function (this: any, docs, next) {
   console.log(`Query took ${Date.now() - this.start} milliseconds!`);
   next();
 });
 
-const TourModel = mongoose.model<ITour>('Tour', tourSchema);
+const TourModel = mongoose.model<ITourDoc, ITourModel>('Tour', tourSchema);
 
 export { TourModel };
