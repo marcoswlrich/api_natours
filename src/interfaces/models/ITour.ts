@@ -1,41 +1,67 @@
-import { Schema, Document } from 'mongoose';
+import mongoose from 'mongoose';
 
-type Location = {
-  type: string;
-  coordinates: number[];
-  address: string;
-  description: string;
-};
-
-type LocationAndDay = {
-  type: string;
-  coordinates: number[];
-  address: string;
-  description: string;
-  day: number;
-};
-
-interface ITour extends Document {
-  id: number;
+export interface ITour {
   name: string;
   duration: number;
-  slug: string;
   maxGroupSize: number;
   difficulty: string;
-  ratingsAverage?: number;
-  ratingsQuantity?: number;
+  ratingsAverage: number;
+  ratingsQuantity: number;
   price: number;
-  priceDiscount?: number;
+  slug?: string;
+  priceDiscount: number;
   summary: string;
   description: string;
   imageCover: string;
   images: string[];
-  createdAt?: Date;
-  startDates?: Date[];
-  secretTour?: boolean;
-  startLocation: Location;
-  locations: LocationAndDay[];
-  guides: Array<Schema.Types.ObjectId>;
+  startDates: Date[];
+  secretTour: boolean;
+  startLocation?: {
+    type: string;
+    description: string;
+    coordinates: [number];
+    address: string;
+  };
+  location?: [
+    {
+      type: string;
+      coordinates: [number];
+      address: string;
+      description: string;
+      day: number;
+    },
+  ];
 }
 
-export { Location, LocationAndDay, ITour };
+export interface ITourDoc extends mongoose.Document {
+  name: string;
+  duration: number;
+  maxGroupSize: number;
+  difficulty: string;
+  ratingsAverage: number;
+  ratingsQuantity: number;
+  price: number;
+  slug?: string;
+  priceDiscount: number;
+  summary: string;
+  description: string;
+  imageCover: string;
+  images: string[];
+  startDates: Date[];
+  secretTour: boolean;
+  startLocation?: {
+    type: string;
+    description: string;
+    coordinates: [number];
+    address: string;
+  };
+  location?: [
+    {
+      type: string;
+      coordinates: [number];
+      address: string;
+      description: string;
+      day: number;
+    },
+  ];
+}
