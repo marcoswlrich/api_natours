@@ -1,11 +1,17 @@
 import bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
-import mongoose, { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 import validator from 'validator';
 
-import { IUser } from '../interfaces/models/IUser';
+import { IUser, IUserDoc } from '../interfaces/models/IUser';
 
-const userSchema = new Schema<IUser>({
+interface IUserModel extends mongoose.Model<IUserDoc> {
+  build(attrs: IUser): IUserDoc;
+}
+
+const { Schema } = mongoose;
+
+const userSchema = new Schema({
   name: {
     type: String,
     maxlength: [50, "Last name can't be longer than 50 characters"],
@@ -113,6 +119,6 @@ userSchema.pre(/^find/, { query: true }, function (next) {
   next();
 });
 
-const UserModel = mongoose.model<IUser>('User', userSchema);
+const UserModel = mongoose.model<IUserDoc, IUserModel>('User', userSchema);
 
 export { UserModel };
