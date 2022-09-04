@@ -1,83 +1,55 @@
-import { Model } from 'mongoose';
-import { ParsedQs } from 'qs';
+import { Query, Document } from 'mongoose';
 
-interface IRequestQuery extends ParsedQs {
-  sort: string;
-  limit: string;
-  page: string;
-  select: string;
-}
-
-export class APIFeatures {
-  protected readonly requestQuery: IRequestQuery;
-  protected query: any;
-
-  constructor(model: Model<any, any, any, any>, requestQuery: ParsedQs) {
-    // Creates mongoose query and sets requestQuery
-    this.query = model.find();
-    this.requestQuery = requestQuery as IRequestQuery;
-
-    this.filter = this.filter.bind(this);
-    this.sort = this.sort.bind(this);
-    this.limit = this.limit.bind(this);
-    this.select = this.select.bind(this);
-    this.paginate = this.paginate.bind(this);
-    this.getQuery = this.getQuery.bind(this);
-  }
-
-  public getQuery(): any {
-    return this.query;
-  }
-
-  public filter(): APIFeatures {
-    const queryObj = { ...this.requestQuery };
-    const excludedFields = ['limit', 'sort', 'page', 'fields'];
+export class APIFeatures<Doc extends Document> {
+  constructor(
+    private query: Query<Doc[], Doc>,
+    private queryString: { [key: string]: string },
+  ) {}
+  filter(): this {
+    // Filtering
+    const queryObj = { ...this.queryString };
+    const excludedFields: string[] = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach(el => delete queryObj[el]);
 
+    // Advanced filtering
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-
     this.query = this.query.find(JSON.parse(queryStr));
-
     return this;
   }
 
-  public sort(): APIFeatures {
-    if (this.requestQuery.sort) {
-      this.query.sort(this.requestQuery.sort.split(',').join(' ') as string);
+  sort(): this {
+    if (this.queryString.sort) {
+      const sortByStr = this.queryString.sort as string;
+      const sortBy = sortByStr.split(',').join(' ');
+      this.query = this.query.sort(sortBy);
     } else {
-      this.query.sort('-createdAt');
+      this.query = this.query.sort('-createdAt');
     }
-
     return this;
   }
 
-  public limit(): APIFeatures {
-    if (this.requestQuery.limit)
-      this.query.limit(Number(this.requestQuery.limit as string));
-
-    return this;
-  }
-
-  public select(): APIFeatures {
-    if (this.requestQuery.fields) {
-      const fields = (this.requestQuery.fields as string).split(',').join(' ');
-
-      this.query.select(fields);
+  limitFields(): this {
+    if (this.queryString.fields) {
+      const fieldsStr = this.queryString.fields as string;
+      const fields = fieldsStr.split(',').join(' ');
+      this.query = this.query.select(fields);
     } else {
-      this.query.select('-__v');
+      this.query = this.query.select('-__v');
     }
-
     return this;
   }
-
-  public paginate(): APIFeatures {
-    const page = (this.requestQuery.page as any) * 1 || 1;
-    const limit = (this.requestQuery.limit as any) * 1 || 100;
+  paginate(): this {
+    let page = this.queryString.page || 1;
+    page = +page;
+    let limit = this.queryString.limit || 100;
+    limit = +limit;
     const skip = (page - 1) * limit;
-
-    this.query.skip(skip).limit(limit);
+    this.query = this.query.skip(skip).limit(limit);
 
     return this;
+  }
+  FetchData(): Query<Doc[], Doc> {
+    return this.query;
   }
 }
