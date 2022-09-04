@@ -1,101 +1,99 @@
 import { Request, Response, NextFunction } from 'express';
-import * as fs from 'fs';
 
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8'),
-);
+// import { AppError } from '../errors/AppError';
+import { TourModel } from '../models/tourModel';
+import {
+  createOne,
+  deleteOne,
+  getAll,
+  getOne,
+  updateOne,
+} from '../services/TourService';
+// import { APIFeatures } from '../utils/APIFeatures';
+import { catchAsync } from '../utils/catchAsync';
 
-class tourController {}
+// const tours = JSON.parse(
+//   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8'),
+// );
 
-const checkID = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-  val: number,
-) => {
-  console.log(`Tour id is: ${val}`);
-  const { id } = req.params;
+export const getAllTours = getAll(TourModel);
+export const getTour = getOne(TourModel, { path: 'reviews' });
+export const updateTour = updateOne(TourModel);
+export const createTour = createOne(TourModel);
+export const deleteTour = deleteOne(TourModel);
 
-  if (id > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
-  return next();
-};
-
-const getAllTours = (req: Request, res: Response) => {
-  console.log(req.requestTime);
-
+export const getTourStats = catchAsync(async (req: Request, res: Response) => {
+  const stats = await TourModel.aggregate([
+    {
+      $match: { ratingsAverage: { $gte: 4.5 } },
+    },
+    {
+      $group: {
+        _id: { $toUpper: '$difficulty' },
+        num: { $sum: 1 },
+        numRatings: { $sum: '$ratingsQuantity' },
+        avgRating: { $avg: '$ratingsAverage' },
+        avgPrice: { $avg: '$price' },
+        minPrice: { $min: '$price' },
+        maxPrice: { $max: '$price' },
+      },
+    },
+    { $sort: { avgPrice: 1 } },
+    // {
+    //   $match: { _id: { $ne: 'EASY' } },
+    // },
+  ]);
   res.status(200).json({
     status: 'success',
-    requestedAt: req.requestTime,
-    results: tours.length,
     data: {
-      tours,
+      stats,
     },
   });
-};
+});
 
-const getTour = (req: Request, res: Response) => {
-  // console.log(req.params);
-  const { id } = req.params;
-
-  const tour = tours.find(el => el.id === id);
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour,
-    },
-  });
-};
-
-const createTour = (req: Request, res: Response) => {
-  // console.log(req.body);
-
-  const newId = tours[tours.length - 1].id + 1;
-  const newTour = { id: newId, ...req.body };
-
-  tours.push(newTour);
-
-  fs.writeFile(
-    `${__dirname}/dev-data/data/tours-simple.json`,
-    JSON.stringify(tours),
-    status => {
-      res.status(201).json({
-        status: 'success',
-        data: {
-          tour: newTour,
+export const getMonthlyPlan = catchAsync(
+  async (req: Request, res: Response) => {
+    const year = +req.params.year;
+    const plan = await TourModel.aggregate([
+      {
+        $unwind: '$startDates',
+      },
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          },
         },
-      });
-    },
-  );
-};
+      },
+      {
+        $group: {
+          _id: { $month: '$startDates' },
+          numTourStarts: { $sum: 1 },
+          tours: { $push: '$name' },
+        },
+      },
+      {
+        $addFields: { month: '$_id' },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+      {
+        $sort: { numTourStarts: -1 },
+      },
+      {
+        $limit: 12,
+      },
+    ]);
 
-const updateTour = (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour: '<Updated tour here...>',
-    },
-  });
-};
-
-const deleteTour = (req: Request, res: Response) => {
-  res.status(204).json({
-    status: 'success',
-    data: null,
-  });
-};
-
-export default {
-  checkID,
-  checkBody,
-  getAllTours,
-  getTour,
-  createTour,
-  updateTour,
-  deleteTour,
-};
+    res.status(200).json({
+      status: 'success',
+      data: {
+        plan,
+      },
+    });
+  },
+);
