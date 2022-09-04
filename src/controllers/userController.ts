@@ -1,38 +1,7 @@
-import { Request, Response } from 'express';
+import { UserModel } from '../models/userModel';
+import { deleteOne, getAll, getOne, updateOne } from '../services/UserService';
 
-const getAllUsers = (req: Request, res: Response) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
-  });
-};
-
-const getUser = (req: Request, res: Response) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
-  });
-};
-
-const createUser = (req: Request, res: Response) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
-  });
-};
-
-const updateUser = (req: Request, res: Response) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
-  });
-};
-
-const deleteUser = (req: Request, res: Response) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
-  });
-};
-
-export default { getAllUsers, getUser, createUser, updateUser, deleteUser };
+export const getUser = getOne(UserModel);
+export const getAllUsers = getAll(UserModel);
+export const updateUser = updateOne(UserModel);
+export const deleteUser = deleteOne(UserModel);
