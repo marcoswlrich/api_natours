@@ -1,143 +1,85 @@
-import * as crypto from 'crypto';
+import { Request, Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 
-import {
-  IPartialUserDto,
-  IUserAndToken,
-  IUserDto,
-  IUserWithoutPassword,
-} from '../interfaces/dtos/IUserDto';
-import { IRequest } from '../interfaces/express/IRequest';
-import { IUser } from '../interfaces/models/IUser';
-import { IUserService } from '../interfaces/services/IUserService';
-import { UserModel } from '../models/userModel';
-import { compareHash } from '../utils/compareHash';
-import { createHash } from '../utils/createHash';
-import { EmptyBody } from '../utils/errors/ EmptyBody';
-import { NotFound } from '../utils/errors/ NotFound';
-import { UserAlreadyExists } from '../utils/errors/ UserAlreadyExists';
-import { EmailPasswordError } from '../utils/errors/EmailPasswordError';
-import { ExpiredToken } from '../utils/errors/ExpiredToken';
-import { generateJwt } from '../utils/generateJwt';
-import { sendEmail } from '../utils/sendEmail';
+import { AppError } from '../errors/AppError';
+import { APIFeatures } from '../utils/APIFeatures';
+import { catchAsync } from '../utils/catchAsync';
 
-class UserService implements IUserService {
-  private JWT_EXPIRATION_TIME = '5h';
+export const deleteOne = (Model: mongoose.Model<any>) =>
+  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const doc = await Model.findByIdAndDelete(id);
+    if (!doc) return next(new AppError('No Document found with that ID', 404));
 
-  public async signup(dto: IUserDto): Promise<IUserWithoutPassword> {
-    const { email, password } = dto;
+    return res.status(204).json({ status: 'success', data: null });
+  });
 
-    const userAlreadyExists = await UserModel.findOne({ email });
-
-    if (userAlreadyExists) throw new UserAlreadyExists();
-
-    // eslint-disable-next-line no-param-reassign
-    dto.password = await createHash(password);
-
-    const user = await UserModel.create(dto);
-    const userWithoutPassword = this.omitPassword(user);
-
-    return userWithoutPassword;
-  }
-
-  public async authenticate(
-    email: string,
-    password: string,
-  ): Promise<IUserAndToken> {
-    const user = await UserModel.findOne({ email });
-    if (!user) throw new EmailPasswordError();
-
-    const match = await compareHash(password, user.password);
-    if (!match) throw new EmailPasswordError();
-
-    const userWithoutPassword = this.omitPassword(user);
-    const token = generateJwt(userWithoutPassword, this.JWT_EXPIRATION_TIME);
-
-    return { user: userWithoutPassword, token };
-  }
-
-  public async forgotPassword(email: string, req: IRequest): Promise<void> {
-    const user = await UserModel.findOne({ email });
-    if (!user) throw new NotFound('User');
-
-    const resetToken = user.createPasswordResetToken();
-    await user.save({ validateBeforeSave: false });
-
-    const resetUrl = `
-      ${req.protocol}://${req.get(
-      'host',
-    )}/api/v1/users/resetPassword/${resetToken}
-    `;
-
-    // email
-    const subject = `${user.name}, here's is your reset-password token.`;
-    const body = `Url to reset password with a PATCH request: ${resetUrl}`;
-
-    await sendEmail({ subject, body }, user);
-  }
-
-  public async resetPassword(
-    resetToken: string,
-    password: string,
-  ): Promise<void> {
-    const hash = crypto.createHash('sha256').update(resetToken).digest('hex');
-
-    const user = await UserModel.findOne({
-      passwordResetToken: hash,
+export const updateOne = (Model: mongoose.Model<any>) =>
+  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const doc = await Model.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
     });
-    if (!user) throw new NotFound('user');
+    if (!doc) return next(new AppError('No Document found with that ID', 404));
 
-    const tokenExpired = user.passwordResetExpires < new Date();
-    if (tokenExpired) throw new ExpiredToken();
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        data: doc,
+      },
+    });
+  });
 
-    user.password = await createHash(password);
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+export const createOne = (Model: mongoose.Model<any>) =>
+  catchAsync(async (req: Request, res: Response) => {
+    const doc = await Model.create({ ...req.body });
+    res.status(201).json({
+      status: 'success',
+      data: {
+        data: doc,
+      },
+    });
+  });
 
-    await user.save();
+export const getOne = (
+  Model: mongoose.Model<any>,
+  populateOption?: { path: string; select?: string },
+) =>
+  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    let query = Model.findById(id);
+    if (populateOption) query = query.populate(populateOption);
+    const doc = await query;
+    if (!doc) return next(new AppError('No Document found with that ID', 404));
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        data: doc,
+      },
+    });
+  });
 
-    console.log('Success!');
-  }
-
-  public async getAll(): Promise<IUserWithoutPassword[]> {
-    const users = await UserModel.find();
-
-    return users.map(u => this.omitPassword(u));
-  }
-
-  public async getOne(id: string): Promise<IUserWithoutPassword> {
-    const user = await UserModel.findById(id);
-
-    if (!user) throw new NotFound('User');
-
-    return this.omitPassword(user);
-  }
-
-  public async update(
-    _id: string,
-    partial: IPartialUserDto,
-  ): Promise<IUserWithoutPassword> {
-    if (Object.keys(partial).length < 1) throw new EmptyBody();
-
-    if ('password' in partial) {
-      partial.password = await createHash(partial.password);
-    }
-
-    const user = await UserModel.findByIdAndUpdate({ _id }, partial);
-
-    Object.keys(partial).forEach(key => (user[key] = partial[key]));
-
-    return this.omitPassword(user);
-  }
-
-  public async delete(id: string): Promise<IUserWithoutPassword> {
-    return UserModel.findByIdAndDelete(id);
-  }
-
-  private omitPassword(user: IUser): IUserWithoutPassword {
-    const { password, ...userWithoutPassword } = user._doc;
-
-    return userWithoutPassword;
-  }
-}
-
-export { UserService };
+export const getAll = (Model: mongoose.Model<any>) =>
+  catchAsync(async (req: Request, res: Response) => {
+    let filter = {};
+    if (req.params.tourId) filter = { tour: req.params.tourId };
+    // EXECUTE QUERY
+    const features = new APIFeatures<mongoose.Document>(
+      Model.find(filter),
+      req.query as { [key: string]: string },
+    )
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    const doc = await features.FetchData();
+    // SEND RESPONSE
+    res.status(200).json({
+      status: 'success',
+      results: doc.length,
+      data: {
+        data: doc,
+      },
+    });
+  });
