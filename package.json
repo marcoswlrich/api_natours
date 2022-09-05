@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "npx ts-node-dev src/server.ts"
+    "dev": "npx ts-node-dev src/server.ts",
+    "created:data": "ts-node-dev dev-data/data/import-dev-data.ts --import",
+    "deleted:data": "ts-node-dev dev-data/data/import-dev-data.ts --delete"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -43,7 +45,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "prettier": "^2.5.1",
     "ts-node": "^10.5.0",
-    "ts-node-dev": "^1.1.8",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^4.5.5"
   }
 }
