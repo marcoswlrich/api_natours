@@ -1,5 +1,4 @@
 // import * as dotenv from 'dotenv';
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
 import { app } from './app';
@@ -10,7 +9,7 @@ import { config } from './config';
 mongoose
   .connect(config.mongo.url, { retryWrites: true, w: 'majority' })
   .then(() => {
-    console.log('Sucess');
+    console.log('MongoDB Connection successfull');
   })
   .catch(error => console.log(error));
 
