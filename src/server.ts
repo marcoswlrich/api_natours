@@ -1,19 +1,18 @@
+// import * as dotenv from 'dotenv';
 import dotenv from 'dotenv';
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 import { app } from './app';
+import { config } from './config';
 
-dotenv.config({ path: '../config.env' });
-
-const DB = process.env.DATABASE?.replace(
-  '<PASSWORD>',
-  process.env.DATABASE_PASSWORD as string,
-) as string;
+// dotenv.config({ path: '../config.env' });
 
 mongoose
-  .connect(DB)
-  .then(() => console.log('DB connected successfully'))
-  .catch(err => console.error(err));
+  .connect(config.mongo.url, { retryWrites: true, w: 'majority' })
+  .then(() => {
+    console.log('Sucess');
+  })
+  .catch(error => console.log(error));
 
 const port = process.env.PORT || 4007;
 
