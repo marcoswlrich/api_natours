@@ -98,4 +98,5 @@ export const globalErrorHandler = (
 
     sendErrorProd(error || err, req, res);
   }
+  next();
 };
