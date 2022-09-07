@@ -24,7 +24,8 @@
     "prettier/prettier": "error",
     "import/no-import-module-exports": "off",
     "no-return-assign":"off",
-     "no-param-reassign":"off",
+    "no-param-reassign":"off",
+    "consistent-return": "off",
     "no-return-await": "off",
     "prefer-destructuring": ["error", {
       "array": false,
