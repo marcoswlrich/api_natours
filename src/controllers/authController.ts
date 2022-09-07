@@ -51,7 +51,7 @@ export const signup = catchAsync(
   async (req: IAuthRequestUser, res: Response, next: NextFunction) => {
     const { name, email, password, passwordConfirm } = req.body;
     const newUser = await UserModel.create({
-      name: req.body.name,
+      name,
       email,
       password,
       passwordConfirm,
@@ -76,7 +76,7 @@ export const login = catchAsync(
       return next(new AppError('Can not find user by the email', 401));
 
     // 3) if everything ok ,send token to client
-    return createAndSendToken(user, 200, res);
+    createAndSendToken(user, 200, res);
   },
 );
 
@@ -121,7 +121,6 @@ export const protect = catchAsync(
       );
 
     req.user = currentUser;
-    return next();
   },
 );
 
@@ -175,7 +174,6 @@ export const forgotPassword = catchAsync(
         ),
       );
     }
-    return next();
   },
 );
 
@@ -206,7 +204,7 @@ export const resetPassword = catchAsync(
     // 3) Update changePasswordAt property for the user
 
     // 4) Log the user in, send JWT
-    return createAndSendToken(user, 200, res);
+    createAndSendToken(user, 200, res);
   },
 );
 
@@ -227,6 +225,6 @@ export const updatePassword = catchAsync(
     // User.findByIdAndUpdate will NOT work as intended
 
     // 4) Log user in, send JWT
-    return createAndSendToken(user!, 200, res);
+    createAndSendToken(user!, 200, res);
   },
 );
