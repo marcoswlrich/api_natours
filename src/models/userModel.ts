@@ -35,7 +35,7 @@ const userSchema = new Schema({
     type: String,
     required: [true, 'kindly confirm your password'],
     validate: {
-      validator(this: IUser, val: string) {
+      validator(this: IUserDoc, val: string) {
         return val === this.password;
       },
       message: 'passwords mismatch',
@@ -70,13 +70,14 @@ userSchema.pre('save', async function (next) {
 
   // Delete passwordConfirm
   this.passwordConfirm = undefined;
+  next();
 });
 
 userSchema.methods.correctPassword = async (
   enteredPassword: string,
   userPassword: string,
 ) => {
-  return bcrypt.compare(enteredPassword, userPassword);
+  return await bcrypt.compare(enteredPassword, userPassword);
 };
 
 userSchema.methods.changePasswordAfter = function (
