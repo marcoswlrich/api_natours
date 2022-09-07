@@ -1,5 +1,6 @@
 import express from 'express';
 
+import { protect, restrictTo } from '../controllers/authController';
 import {
   aliasTopTours,
   createTour,
@@ -18,8 +19,15 @@ tourRouter.route('/top-5-cheap').get(aliasTopTours, getAllTours);
 tourRouter.route('/tour-stats').get(getTourStats);
 tourRouter.route('/monthly-plan/:year').get(getMonthlyPlan);
 
-tourRouter.route('/').get(getAllTours).post(createTour);
+tourRouter
+  .route('/')
+  .get(getAllTours)
+  .post(protect, restrictTo('admin', 'lead-guide'), createTour);
 
-tourRouter.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
+tourRouter
+  .route('/:id')
+  .get(getTour)
+  .patch(protect, restrictTo('admin', 'lead-guide'), updateTour)
+  .delete(protect, restrictTo('admin', 'lead-guide'), deleteTour);
 
 export { tourRouter };
