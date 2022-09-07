@@ -31,7 +31,7 @@ const userSchema = new Schema({
     minlength: [8, 'password must be at least 8 charachters'],
     select: false,
   },
-  confirmPassword: {
+  passwordConfirm: {
     type: String,
     required: [true, 'kindly confirm your password'],
     validate: {
