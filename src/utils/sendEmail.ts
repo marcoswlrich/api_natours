@@ -7,20 +7,18 @@ type EmailDto = {
 };
 
 export async function sendEmail(email: EmailDto) {
-  const testAccount = await nodemailer.createTestAccount();
-
   const transporter = nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
+    host: 'smtp.mailtrap.io',
     port: 25,
     secure: false,
     auth: {
-      user: testAccount.user, // generated ethereal user
-      pass: testAccount.pass, // generated ethereal password
+      user: process.env.EMAIL_USERNAME,
+      pass: process.env.EMAIL_PASSWORD,
     },
   });
 
   const info = await transporter.sendMail({
-    from: '"Bot 👻" <Bot@mail.com>',
+    from: '"Bot 👻" <marcos@email.com>',
     to: email.email, // list of receivers
     subject: email.subject, // Subject line
     html: email.message, // html body
