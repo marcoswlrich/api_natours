@@ -27,7 +27,7 @@ export const aliasTopTours = (
 // );
 
 export const getAllTours = getAll(TourModel);
-export const getTour = getOne(TourModel, { path: 'reviews' });
+export const getTour = getOne(TourModel);
 export const updateTour = updateOne(TourModel);
 export const createTour = createOne(TourModel);
 export const deleteTour = deleteOne(TourModel);
