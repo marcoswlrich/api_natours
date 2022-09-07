@@ -33,12 +33,13 @@ export const updateMe = catchAsync(
     const { password, passwordConfirm } = req.body;
     // 1) Create error if user  POSTs password data
     if (password || passwordConfirm) {
-      return next(
+      next(
         new AppError(
           'This route is not for password update. Please use / updateMyPassword',
           400,
         ),
       );
+      return;
     }
     // 2) Filtered out unwanted fields names that are not allowed to be updated
     const filteredBody = filterObj(req.body, 'name', 'email');
@@ -53,9 +54,7 @@ export const updateMe = catchAsync(
       },
     );
 
-    return res
-      .status(200)
-      .json({ status: 'success', data: { user: updatedUser } });
+    res.status(200).json({ status: 'success', data: { user: updatedUser } });
   },
 );
 
