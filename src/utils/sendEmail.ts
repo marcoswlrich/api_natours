@@ -1,18 +1,17 @@
 import * as nodemailer from 'nodemailer';
 
-import { IUser } from '../interfaces/models/IUser';
-
 type EmailDto = {
+  email: string;
   subject: string;
-  body: string;
+  message: string;
 };
 
-export async function sendEmail(email: EmailDto, to: IUser) {
+export async function sendEmail(email: EmailDto) {
   const testAccount = await nodemailer.createTestAccount();
 
   const transporter = nodemailer.createTransport({
     host: 'smtp.ethereal.email',
-    port: 587,
+    port: 25,
     secure: false,
     auth: {
       user: testAccount.user, // generated ethereal user
@@ -22,9 +21,9 @@ export async function sendEmail(email: EmailDto, to: IUser) {
 
   const info = await transporter.sendMail({
     from: '"Bot 👻" <Bot@mail.com>',
-    to: to.email, // list of receivers
+    to: email.email, // list of receivers
     subject: email.subject, // Subject line
-    html: email.body, // html body
+    html: email.message, // html body
   });
 
   console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));

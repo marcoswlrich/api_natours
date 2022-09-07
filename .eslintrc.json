@@ -26,6 +26,13 @@
     "no-return-assign":"off",
      "no-param-reassign":"off",
     "no-return-await": "off",
+    "prefer-destructuring": ["error", {
+      "array": false,
+      "object": false
+    }, {
+      "enforceForRenamedProperties": false
+    }],
+    "@typescript-eslint/no-non-null-assertion": "off",
     "camelcase": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "func-names":"off",
