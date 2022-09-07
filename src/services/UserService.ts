@@ -9,9 +9,9 @@ export const deleteOne = (Model: mongoose.Model<any>) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     const doc = await Model.findByIdAndDelete(id);
-    if (!doc) return next(new AppError('No Document found with that ID', 404));
+    if (!doc) next(new AppError('No Document found with that ID', 404));
 
-    return res.status(204).json({ status: 'success', data: null });
+    res.status(204).json({ status: 'success', data: null });
   });
 
 export const updateOne = (Model: mongoose.Model<any>) =>
@@ -21,9 +21,9 @@ export const updateOne = (Model: mongoose.Model<any>) =>
       new: true,
       runValidators: true,
     });
-    if (!doc) return next(new AppError('No Document found with that ID', 404));
+    if (!doc) next(new AppError('No Document found with that ID', 404));
 
-    return res.status(200).json({
+    res.status(200).json({
       status: 'success',
       data: {
         data: doc,
@@ -51,8 +51,8 @@ export const getOne = (
     let query = Model.findById(id);
     if (populateOption) query = query.populate(populateOption);
     const doc = await query;
-    if (!doc) return next(new AppError('No Document found with that ID', 404));
-    return res.status(200).json({
+    if (!doc) next(new AppError('No Document found with that ID', 404));
+    res.status(200).json({
       status: 'success',
       data: {
         data: doc,
