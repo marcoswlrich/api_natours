@@ -140,15 +140,15 @@ tourSchema.pre<Query<ITourDoc[], ITourDoc>>(
   function (this: any, next) {
     this.populate({
       path: 'guides',
-      select: '-passwordChangedAt',
+      select: '-__v -passwordChangedAt',
     });
 
-    next();
+    next(null);
   },
 );
 
 tourSchema.post(/^find/, function (this: any, docs, next) {
-  console.log(`Query took ${Date.now() - this.start} milliseconds!`);
+  console.log(`Query took ${Date.now()} milliseconds!`);
   next();
 });
 
