@@ -50,8 +50,8 @@ const createAndSendToken = (
 export const signup = catchAsync(
   async (req: IAuthRequestUser, res: Response, next: NextFunction) => {
     const { name, email, password, passwordConfirm } = req.body;
-    const newUser = await UserModel.build({
-      name,
+    const newUser = await UserModel.create({
+      name: req.body.name,
       email,
       password,
       passwordConfirm,
