@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
-import jwt, { Secret, verify } from 'jsonwebtoken';
+import jwt, { Secret, verify, JwtPayload } from 'jsonwebtoken';
 import { promisify } from 'util';
 
 import { AppError } from '../errors/AppError';
@@ -86,7 +86,7 @@ export const protect = catchAsync(
     let token: string | undefined;
     if (
       req.headers.authorization &&
-      req.headers.authorization.startsWith('Bearer')
+      req.headers.authorization.startsWith('Bearer ')
     ) {
       token = req.headers.authorization.split(' ')[1];
     }
@@ -94,8 +94,8 @@ export const protect = catchAsync(
       return next(
         new AppError('You are not login, please log in to get access', 401),
       );
-    // 2) Verification token
 
+    // 2) Verification token
     const decodeToken = await promisify<string, Secret, any>(verify)(
       token,
       process.env.JWT_SECRET!,
@@ -121,6 +121,7 @@ export const protect = catchAsync(
       );
 
     req.user = currentUser;
+    next();
   },
 );
 
