@@ -148,7 +148,7 @@ tourSchema.pre<Query<ITourDoc[], ITourDoc>>(
 );
 
 tourSchema.post(/^find/, function (this: any, docs, next) {
-  console.log(`Query took ${Date.now()} milliseconds!`);
+  console.log(`Query took ${Date.now() + 10 * 60 * 1000} milliseconds!`);
   next();
 });
 
