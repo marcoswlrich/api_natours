@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
-import mongoose from 'mongoose';
+import mongoose, { Query } from 'mongoose';
 import validator from 'validator';
 
 import { IUser, IUserDoc } from '../interfaces/models/IUser';
@@ -35,11 +35,15 @@ const userSchema = new Schema({
     type: String,
     required: [true, 'kindly confirm your password'],
     validate: {
-      validator(this: IUserDoc, val: string) {
-        return val === this.password;
+      validator(this: IUserDoc, val: string): boolean {
+        return this.password === val;
       },
       message: 'passwords mismatch',
     },
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
   },
   photo: {
     type: String,
@@ -61,11 +65,12 @@ const userSchema = new Schema({
   passwordResetExpires: Date,
 });
 
-userSchema.pre('save', async function (next) {
+userSchema.pre<IUserDoc>('save', async function (next) {
   // Only run this function if password is actually modified
-  if (!this.isModified('password')) next();
-
-  // Hash password with cost of 12
+  if (!this.isModified('password')) {
+    next();
+    return;
+  }
   this.password = await bcrypt.hash(this.password, 12);
 
   // Delete passwordConfirm
@@ -73,15 +78,33 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+userSchema.pre<IUserDoc>('save', function (next) {
+  if (!this.isModified(this.password) || this.isNew) return next();
+
+  this.passwordChangedAt = new Date();
+
+  next();
+});
+
+userSchema.pre<Query<IUserDoc[], IUserDoc>>(
+  /^find/,
+  { query: true },
+  function (next) {
+    // this point to current query
+    this.find({ active: { $ne: false } });
+    next();
+  },
+);
+
 userSchema.methods.correctPassword = async (
-  enteredPassword: string,
+  candidatePassword: string,
   userPassword: string,
 ) => {
-  return await bcrypt.compare(enteredPassword, userPassword);
+  return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-userSchema.methods.changePasswordAfter = function (
-  this: IUser,
+userSchema.methods.changedPasswordAfter = function (
+  this: IUserDoc,
   JWTTimestamp: number,
 ) {
   if (this.passwordChangedAt) {
@@ -96,29 +119,18 @@ userSchema.methods.changePasswordAfter = function (
 
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
-  const hash = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-  this.passwordResetToken = hash;
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
 
-  console.log({ resetToken, passwordResetToken: hash });
+  console.log({ resetToken }, this.passwordResetToken);
 
   this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // expire on 10 mins;
 
   return resetToken;
 };
-
-userSchema.pre('save', function (next) {
-  if (this.isModified(this.password) || this.isNew) {
-    this.passwordChangedAt = (Date.now() - 1000) as unknown as Date;
-  }
-  next();
-});
-
-userSchema.pre(/^find/, { query: true }, function (next) {
-  // this point to current query
-  this.find({ active: { $ne: false } });
-  next();
-});
 
 const UserModel = mongoose.model<IUserDoc, IUserModel>('User', userSchema);
 
