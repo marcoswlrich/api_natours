@@ -25,7 +25,7 @@ userRouter.post('/login', login);
 userRouter.post('/forgotPassword', forgotPassword);
 userRouter.patch('/resetPassword/:resetToken', resetPassword);
 
-userRouter.patch('/updatePassword', updatePassword);
+userRouter.patch('/updatePassword', protect, updatePassword);
 userRouter.patch('/updateMe', updateMe);
 userRouter.delete('/deleteMe', deleteMe);
 
