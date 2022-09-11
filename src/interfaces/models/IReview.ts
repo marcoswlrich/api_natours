@@ -1,11 +1,15 @@
-import { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
-interface IReview {
+export interface IReview {
+  review: string;
+  rating: number;
+  tour: string;
+  user: string;
+}
+export interface IReviewDoc extends mongoose.Document {
   review: string;
   rating: number;
   createdAt: Date;
-  tour: Schema.Types.ObjectId;
-  user: Schema.Types.ObjectId;
+  tour: string;
+  user: string;
 }
-
-export { IReview };
